@@ -6,7 +6,7 @@
 ```markdown
 # Assignment 2 – Configure Loopback Interfaces and EIGRP
 **Student:** Tran Minh Khang Phung  
-**Course:** CNIT – Network Automation with Ansible
+**Course:** CNIT381 – Network Automation
 
 ## 📘 Description
 This playbook configures three loopback interfaces on each router using dynamic IP calculations.  
