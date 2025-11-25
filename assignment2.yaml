@@ -1,0 +1,50 @@
+---
+- name: Configure Loopbacks and EIGRP
+  hosts: routers
+  gather_facts: no
+
+  vars:
+    router_id: "{{ groups['routers'].index(inventory_hostname) + 1 }}"
+    loopbacks:
+      - { id: 0, network: "10.0.0." }
+      - { id: 1, network: "10.1.1." }
+      - { id: 2, network: "10.2.2." }
+
+  tasks:
+    - name: Display router ID
+      debug:
+        msg: "Router {{ inventory_hostname }} is router number {{ router_id }}"
+
+    - name: Configure loopback interfaces
+      ios_config:
+        lines:
+          - "ip address {{ item.network }}{{ router_id }} 255.255.255.255"
+        parents: "interface Loopback{{ item.id }}"
+      loop: "{{ loopbacks }}"
+
+    - name: Configure EIGRP process 100
+      ios_config:
+        parents: router eigrp 100
+        lines:
+          - network 10.0.0.0 0.255.255.255
+          - network 192.168.100.0 0.0.0.255
+
+    - name: Verify loopbacks
+      ios_command:
+        commands:
+          - show ip interface brief | include Loopback
+      register: loopback_output
+
+    - name: Display loopback status
+      debug:
+        msg: "{{ loopback_output.stdout_lines }}"
+
+    - name: Check EIGRP neighbors
+      ios_command:
+        commands:
+          - show ip eigrp neighbors
+      register: eigrp_output
+
+    - name: Display EIGRP neighbors
+      debug:
+        msg: "{{ eigrp_output.stdout_lines }}"
